@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Gender {
+  id       Int        @id @default(autoincrement())
+  name     GenderEnum
+  patients Patient[]
+}
+
+enum GenderEnum {
+  MASCULINO
+  FEMENINO
+  OTRO
+}
+
+model BloodType {
+  id       Int           @id @default(autoincrement())
+  name     BloodTypeEnum
+  patients Patient[]
+}
+
+enum BloodTypeEnum {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+}
+
+model Patient {
+  id          String   @id @default(uuid())
+  name        String
+  lastName    String
+  age         Int
+  ci          String
+  phone       String
+  genderId    Int
+  bloodTypeId Int
+  createdAt   DateTime @default(now())
+  gender      Gender   @relation(fields: [genderId], references: [id])
+
+  latitude  Decimal?  @db.Decimal(9, 6)
+  longitude Decimal?  @db.Decimal(9, 6)
+  bloodType BloodType @relation(fields: [bloodTypeId], references: [id])
+  // user      User
+}
+
+// model User {
+//   id       Int    @id @default(autoincrement())
+//   email    String @unique
+//   password String
+
+//   patientId Int     @unique
+//   patient   Patient @relation(fields: [patientId], references: [id])
+// }
