@@ -29,4 +29,7 @@ export class GenderService extends PrismaClient implements OnModuleInit {
     });
   }
 
+  public genderExists(id: number) {
+    return this.gender.findUnique({ where: { id } });
+  }
 }
