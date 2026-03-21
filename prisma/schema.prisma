@@ -46,7 +46,7 @@ model Patient {
   name        String
   lastName    String
   age         Int
-  ci          String
+  ci          String   @unique
   phone       String
   genderId    Int
   bloodTypeId Int
@@ -57,6 +57,7 @@ model Patient {
   longitude Decimal?  @db.Decimal(9, 6)
   bloodType BloodType @relation(fields: [bloodTypeId], references: [id])
   // user      User
+  isDeleted Boolean   @default(false)
 }
 
 // model User {

@@ -66,6 +66,7 @@ import { PrismaClient } from '@prisma/client';
  */
 interface PrismaDelegate {
   findUnique(args: any): any;
+  findMany(args?: any): any;
 }
 
 export abstract class BasePrismaService extends PrismaClient implements OnModuleInit {
@@ -100,11 +101,63 @@ export abstract class BasePrismaService extends PrismaClient implements OnModule
     if (!record) {
       throw new HttpException(
         {
-          status: HttpStatus.BAD_REQUEST,
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
           error: `El id numero: ${id} del ${entityName} ingresado no existe`,
         },
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
   }
+  protected async hasRecords<T>(
+    delegate: PrismaDelegate,
+    entityName: string,
+    options?: { isDeletedCheck?: boolean }
+  ): Promise<{ message: string; data: T[] }> {
+
+    const records = await delegate.findMany({
+      where: options?.isDeletedCheck ? { isDeleted: false } : undefined,
+    });
+
+    if (records.length === 0) {
+      return {
+        message: `Aún no se registraron ${entityName}`,
+        data: []
+      };
+    }
+
+    return {
+      message: `${entityName} obtenidos correctamente`,
+      data: records
+    };
+  }
+  protected async findByIdOrFail(
+    delegate: PrismaDelegate,
+    id: number | string,
+    entityName: string): Promise<any> {
+    const record = await delegate.findUnique({ where: { id } });
+    if (!record) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: `No se encontró el ${entityName} con id: ${id}`,
+        },
+        HttpStatus.NOT_FOUND
+      )
+    }
+    return record;
+  }
+  protected async findByFieldOrFail<T>(
+    delegate: PrismaDelegate,
+    field: keyof T,
+    value: any,
+    entityName: string
+  ): Promise<any> {
+    const record = await delegate.findUnique({ where: { [field]: value } });
+    if (record)
+      return {
+        message: `el ${String(field)}: ${value} ingresado ya existe`,
+      }
+
+  }
+
 }
