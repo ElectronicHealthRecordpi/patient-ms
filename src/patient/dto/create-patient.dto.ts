@@ -1,7 +1,7 @@
 import {
     IsInt, IsNotEmpty, IsNumber, IsOptional,
     IsPositive, IsString, Matches, Max, MaxLength,
-    Min, MinLength, ValidateIf
+    Min, MinLength
 } from "class-validator";
 
 export class CreatePatientDto {

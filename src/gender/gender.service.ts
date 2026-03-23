@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit, Logger, HttpException, HttpStatus } from '@ne
 import { CreateGenderDto } from './dto/create-gender.dto';
 import { PrismaClient } from '@prisma/client';
 import { BasePrismaService } from 'src/common/base-prisma.service';
+import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class GenderService extends BasePrismaService {
@@ -9,12 +10,11 @@ export class GenderService extends BasePrismaService {
   async create(createGenderDto: CreateGenderDto) {
     const exists = await this.valueExists(this.gender, 'name', createGenderDto.name, 'nombre del genero');
     if (exists) {
-      throw new HttpException(
+      throw new RpcException(
         {
           status: HttpStatus.UNPROCESSABLE_ENTITY,
-          error: `Ya existe un genero con el nombre: ${createGenderDto.name}`,
-        },
-        HttpStatus.UNPROCESSABLE_ENTITY,
+          message: `Ya existe un genero con el nombre: ${createGenderDto.name}`,
+        }
       );
     }
 
