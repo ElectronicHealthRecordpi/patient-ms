@@ -1,22 +1,29 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, OnModuleInit, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateGenderDto } from './dto/create-gender.dto';
 import { PrismaClient } from '@prisma/client';
+import { BasePrismaService } from 'src/common/base-prisma.service';
 
 @Injectable()
-export class GenderService extends PrismaClient implements OnModuleInit {
+export class GenderService extends BasePrismaService {
+  protected readonly logger = new Logger(GenderService.name);
+  async create(createGenderDto: CreateGenderDto) {
+    const exists = await this.valueExists(this.gender, 'name', createGenderDto.name, 'nombre del genero');
+    if (exists) {
+      throw new HttpException(
+        {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: `Ya existe un genero con el nombre: ${createGenderDto.name}`,
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
 
-  private readonly logger = new Logger("Gender Service")
-  async onModuleInit() {
-    await this.$connect();
-    this.logger.log("Conectado a la base de datos")
-  }
-
-  create(createGenderDto: CreateGenderDto) {
-    return this.gender.create({
+    return await this.gender.create({
       data: {
         name: createGenderDto.name
       }
     });
+
   }
 
   findAll() {
@@ -29,7 +36,5 @@ export class GenderService extends PrismaClient implements OnModuleInit {
     });
   }
 
-  public genderExists(id: number) {
-    return this.gender.findUnique({ where: { id } });
-  }
+
 }

@@ -12,6 +12,13 @@ export class PatientService extends BasePrismaService {
 
     await this.ensureExists(this.gender, genderId, 'genero');
     await this.ensureExists(this.bloodType, bloodTypeId, 'tipo de sangre');
+    const ciExists = await this.valueExists(this.patient, 'ci', createPatientDto.ci, 'ci del paciente');
+    if (ciExists)
+      throw new HttpException(
+        `Ya existe un paciente con CI: ${createPatientDto.ci}`,
+        HttpStatus.CONFLICT
+      );
+
     return await this.patient.create({
       data: {
         ...createPatientDto,
@@ -32,8 +39,19 @@ export class PatientService extends BasePrismaService {
   }
 
   async update(id: string, updatePatientDto: UpdatePatientDto) {
-    const { genderId, bloodTypeId } = updatePatientDto;
+    const { genderId, bloodTypeId, ci } = updatePatientDto;
 
+    const patient = await this.findByIdOrFail(this.patient, id, 'paciente');
+
+    if (patient.isDeleted)
+      throw new BadRequestException('No puedes modificar un paciente eliminado');
+
+    if (ci) {
+      const existing = await this.patient.findUnique({ where: { ci } });
+      if (existing && existing.id !== id) {
+        throw new HttpException(`Ya existe un paciente con CI: ${ci}`, HttpStatus.CONFLICT);
+      }
+    }
     if (genderId) {
       await this.ensureExists(this.gender, genderId, 'genero');
     }
@@ -41,12 +59,6 @@ export class PatientService extends BasePrismaService {
     if (bloodTypeId) {
       await this.ensureExists(this.bloodType, bloodTypeId, 'tipo de sangre');
     }
-
-    const patient = await this.findByIdOrFail(this.patient, id, 'paciente');
-
-    if (patient.isDeleted)
-      throw new BadRequestException('No puedes modificar un paciente eliminado');
-
 
     const updatedPatient = await this.patient.update({
       where: { id },

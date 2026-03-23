@@ -67,6 +67,7 @@ import { PrismaClient } from '@prisma/client';
 interface PrismaDelegate {
   findUnique(args: any): any;
   findMany(args?: any): any;
+  findFirst(args?: any): any;
 }
 
 export abstract class BasePrismaService extends PrismaClient implements OnModuleInit {
@@ -146,18 +147,17 @@ export abstract class BasePrismaService extends PrismaClient implements OnModule
     }
     return record;
   }
-  protected async findByFieldOrFail<T>(
+  protected async valueExists<T>(
     delegate: PrismaDelegate,
     field: keyof T,
     value: any,
-    entityName: string
-  ): Promise<any> {
-    const record = await delegate.findUnique({ where: { [field]: value } });
+    entityName: string,
+    excludeId?: number | string
+  ): Promise<boolean> {
+    const record = await delegate.findFirst({ where: { [field]: value } });
     if (record)
-      return {
-        message: `el ${String(field)}: ${value} ingresado ya existe`,
-      }
-
+      return true
+    return false;
   }
 
 }
