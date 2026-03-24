@@ -154,7 +154,7 @@ export abstract class BasePrismaService extends PrismaClient implements OnModule
     entityName: string,
     excludeId?: number | string
   ): Promise<boolean> {
-    const record = await delegate.findFirst({ where: { [field]: value } });
+    const record = await delegate.findFirst({ where: { [field]: value, id: { not: excludeId } } });
     if (record)
       return true
     return false;

@@ -2,36 +2,41 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from 
 import { BloodTypeService } from './blood-type.service';
 import { CreateBloodTypeDto } from './dto/create-blood-type.dto';
 import { UpdateBloodTypeDto } from './dto/update-blood-type.dto';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
 @Controller('blood-type')
 export class BloodTypeController {
   constructor(private readonly bloodTypeService: BloodTypeService) { }
 
-  @Post()
-  create(@Body() createBloodTypeDto: CreateBloodTypeDto) {
+  // @Post()
+  @MessagePattern({ cmd: 'create-blood-type' })
+  create(@Payload() createBloodTypeDto: CreateBloodTypeDto) {
     return this.bloodTypeService.create(createBloodTypeDto);
   }
 
-  @Get()
+  // @Get()
+  @MessagePattern({ cmd: 'find-all-blood-types' })
   findAll() {
     return this.bloodTypeService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.bloodTypeService.findOne(id);
+  // @Get(':id')
+  @MessagePattern({ cmd: 'find-one-blood-type' })
+  findOne(@Payload('id') id: number) {
+    return this.bloodTypeService.findOne(+id);
   }
 
-  @Patch(':id')
+  // @Patch(':id')
+  @MessagePattern({ cmd: 'update-blood-type' })
   update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateBloodTypeDto: UpdateBloodTypeDto,
+    // @Payload('id', ParseIntPipe) id: number,
+    @Payload() updateBloodTypeDto: UpdateBloodTypeDto,
   ) {
-    return this.bloodTypeService.update(id, updateBloodTypeDto);
+    return this.bloodTypeService.update(updateBloodTypeDto.id, updateBloodTypeDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.bloodTypeService.remove(id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id', ParseIntPipe) id: number) {
+  //   return this.bloodTypeService.remove(id);
+  // }
 }
