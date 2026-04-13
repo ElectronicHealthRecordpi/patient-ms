@@ -1,4 +1,5 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { BasePrismaService } from '../common/base-prisma.service';
@@ -14,10 +15,10 @@ export class PatientService extends BasePrismaService {
     await this.ensureExists(this.bloodType, bloodTypeId, 'tipo de sangre');
     const ciExists = await this.valueExists(this.patient, 'ci', createPatientDto.ci, 'ci del paciente');
     if (ciExists)
-      throw new HttpException(
-        `Ya existe un paciente con CI: ${createPatientDto.ci}`,
-        HttpStatus.CONFLICT
-      );
+      throw new RpcException({
+        status: HttpStatus.CONFLICT,
+        message: `Ya existe un paciente con CI: ${createPatientDto.ci}`,
+      });
 
     return await this.patient.create({
       data: {
@@ -44,12 +45,18 @@ export class PatientService extends BasePrismaService {
     const patient = await this.findByIdOrFail(this.patient, id, 'paciente');
 
     if (patient.isDeleted)
-      throw new BadRequestException('No puedes modificar un paciente eliminado');
+      throw new RpcException({
+        status: HttpStatus.BAD_REQUEST,
+        message: 'No puedes modificar un paciente eliminado',
+      });
 
     if (ci) {
       const existing = await this.patient.findUnique({ where: { ci } });
       if (existing && existing.id !== id) {
-        throw new HttpException(`Ya existe un paciente con CI: ${ci}`, HttpStatus.CONFLICT);
+        throw new RpcException({
+          status: HttpStatus.CONFLICT,
+          message: `Ya existe un paciente con CI: ${ci}`,
+        });
       }
     }
     if (genderId) {
@@ -71,10 +78,14 @@ export class PatientService extends BasePrismaService {
 
     return updatedPatient;
   }
+
   async remove(id: string) {
     const patientFound = await this.findByIdOrFail(this.patient, id, 'paciente');
     if (patientFound.isDeleted)
-      throw new BadRequestException(`Paciente con ci: ${patientFound.ci} ya eliminado`);
+      throw new RpcException({
+        status: HttpStatus.BAD_REQUEST,
+        message: `Paciente con ci: ${patientFound.ci} ya eliminado`,
+      });
 
     const patient = await this.patient.update({
       where: { id },

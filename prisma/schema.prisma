@@ -56,8 +56,10 @@ model Patient {
   latitude  Decimal?  @db.Decimal(9, 6)
   longitude Decimal?  @db.Decimal(9, 6)
   bloodType BloodType @relation(fields: [bloodTypeId], references: [id])
-  // user      User
+  userId    String?
   isDeleted Boolean   @default(false)
+
+  @@index([userId])
 }
 
 // model User {

@@ -1,4 +1,5 @@
-import { HttpException, HttpStatus, Logger, OnModuleInit } from '@nestjs/common';
+import { HttpStatus, Logger, OnModuleInit } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
 import { PrismaClient } from '@prisma/client';
 
 /**
@@ -100,13 +101,10 @@ export abstract class BasePrismaService extends PrismaClient implements OnModule
   ): Promise<void> {
     const record = await delegate.findUnique({ where: { id } });
     if (!record) {
-      throw new HttpException(
-        {
-          status: HttpStatus.UNPROCESSABLE_ENTITY,
-          error: `El id numero: ${id} del ${entityName} ingresado no existe`,
-        },
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
+      throw new RpcException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        message: `El id numero: ${id} del ${entityName} ingresado no existe`,
+      });
     }
   }
   protected async hasRecords<T>(
@@ -137,13 +135,10 @@ export abstract class BasePrismaService extends PrismaClient implements OnModule
     entityName: string): Promise<any> {
     const record = await delegate.findUnique({ where: { id } });
     if (!record) {
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_FOUND,
-          error: `No se encontró el ${entityName} con id: ${id}`,
-        },
-        HttpStatus.NOT_FOUND
-      )
+      throw new RpcException({
+        status: HttpStatus.NOT_FOUND,
+        message: `No se encontró el ${entityName} con id: ${id}`,
+      });
     }
     return record;
   }

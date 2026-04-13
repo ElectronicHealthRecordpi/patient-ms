@@ -1,34 +1,36 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { PatientService } from './patient.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 
-@Controller('patient')
+@Controller()
 export class PatientController {
   constructor(private readonly patientService: PatientService) { }
 
-  @Post()
-  create(@Body() createPatientDto: CreatePatientDto) {
+  @MessagePattern({ cmd: 'create-patient' })
+  create(@Payload() createPatientDto: CreatePatientDto) {
     return this.patientService.create(createPatientDto);
   }
 
-  @Get()
+  @MessagePattern({ cmd: 'find-all-patients' })
   findAll() {
     return this.patientService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
+  @MessagePattern({ cmd: 'find-one-patient' })
+  findOne(@Payload('id') id: string) {
     return this.patientService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() updatePatientDto: UpdatePatientDto) {
+  @MessagePattern({ cmd: 'update-patient' })
+  update(@Payload() data: { id: string } & UpdatePatientDto) {
+    const { id, ...updatePatientDto } = data;
     return this.patientService.update(id, updatePatientDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
+  @MessagePattern({ cmd: 'remove-patient' })
+  remove(@Payload('id') id: string) {
     return this.patientService.remove(id);
   }
 }
