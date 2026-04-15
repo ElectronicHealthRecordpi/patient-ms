@@ -102,5 +102,32 @@ export class PatientService extends BasePrismaService {
       fullName: `${patient.name} ${patient.lastName}`
     };
   }
-}
+  async getIdByCi(ci: string) {
+    const patient = await this.patient.findFirst({
+      where: { ci, isDeleted: false },
+      select: { id: true }
+    });
+    console.log('Paciente encontrado:', patient);
 
+    if (!patient) throw new RpcException({
+      status: HttpStatus.NOT_FOUND,
+      message: `No se encontró un paciente con CI: ${ci}`,
+    });
+    return patient.id;
+
+  }
+
+  async findByCi(ci: string) {
+    const patient = await this.patient.findFirst({
+      where: { ci, isDeleted: false },
+      include: { gender: true, bloodType: true },
+    });
+
+    if (!patient) throw new RpcException({
+      status: HttpStatus.NOT_FOUND,
+      message: `No se encontró un paciente con CI: ${ci}`,
+    });
+
+    return patient;
+  }
+}

@@ -7,7 +7,6 @@ import { UpdatePatientDto } from './dto/update-patient.dto';
 @Controller()
 export class PatientController {
   constructor(private readonly patientService: PatientService) { }
-
   @MessagePattern({ cmd: 'create-patient' })
   create(@Payload() createPatientDto: CreatePatientDto) {
     return this.patientService.create(createPatientDto);
@@ -32,5 +31,15 @@ export class PatientController {
   @MessagePattern({ cmd: 'remove-patient' })
   remove(@Payload('id') id: string) {
     return this.patientService.remove(id);
+  }
+  @MessagePattern({ cmd: 'patients-get-id-by-ci' })
+  getIdByCi(@Payload() data: { ci: string }) {
+    console.log('CI recibido:', data);
+    return this.patientService.getIdByCi(data.ci);
+  }
+
+  @MessagePattern({ cmd: 'find-patient-by-ci' })
+  findByCi(@Payload() data: { ci: string }) {
+    return this.patientService.findByCi(data.ci);
   }
 }
