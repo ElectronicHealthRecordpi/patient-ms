@@ -60,11 +60,13 @@ export class CreatePatientDto {
     @IsNumber()
     @Min(-90)
     @Max(90)
+    @IsOptional()
     latitude?: number;
 
     @IsNotEmpty()
     @IsNumber()
     @Min(-180)
     @Max(180)
+    @IsOptional()
     longitude?: number;
 }

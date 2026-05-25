@@ -42,4 +42,9 @@ export class PatientController {
   findByCi(@Payload() data: { ci: string }) {
     return this.patientService.findByCi(data.ci);
   }
+
+  @MessagePattern({ cmd: 'epidemiology.get-patient-locations' })
+  getPatientLocations() {
+    return this.patientService.getPatientLocations();
+  }
 }

@@ -3,6 +3,7 @@ import { RpcException } from '@nestjs/microservices';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { BasePrismaService } from '../common/base-prisma.service';
+import e from 'express';
 
 @Injectable()
 export class PatientService extends BasePrismaService {
@@ -10,7 +11,10 @@ export class PatientService extends BasePrismaService {
 
   async create(createPatientDto: CreatePatientDto) {
     const { genderId, bloodTypeId } = createPatientDto;
-
+    if (createPatientDto.latitude == null || createPatientDto.longitude == null) {
+      createPatientDto.latitude = -17.3895;
+      createPatientDto.longitude = -66.1568;
+    }
     await this.ensureExists(this.gender, genderId, 'genero');
     await this.ensureExists(this.bloodType, bloodTypeId, 'tipo de sangre');
     const ciExists = await this.valueExists(this.patient, 'ci', createPatientDto.ci, 'ci del paciente');
@@ -129,5 +133,22 @@ export class PatientService extends BasePrismaService {
     });
 
     return patient;
+  }
+
+  async getPatientLocations() {
+    return this.patient.findMany({
+      where: {
+        isDeleted: false,
+        latitude: { not: null },
+        longitude: { not: null },
+      },
+      select: {
+        id: true,
+        name: true,
+        lastName: true,
+        latitude: true,
+        longitude: true,
+      },
+    });
   }
 }

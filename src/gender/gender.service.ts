@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateGenderDto } from './dto/create-gender.dto';
 import { PrismaClient } from '@prisma/client';
-import { BasePrismaService } from 'src/common/base-prisma.service';
+import { BasePrismaService } from '../common/base-prisma.service';
 import { RpcException } from '@nestjs/microservices';
 
 @Injectable()

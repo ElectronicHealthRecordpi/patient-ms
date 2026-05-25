@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { CreateBloodTypeDto } from './dto/create-blood-type.dto';
 import { UpdateBloodTypeDto } from './dto/update-blood-type.dto';
-import { BasePrismaService } from 'src/common/base-prisma.service';
+import { BasePrismaService } from '../common/base-prisma.service';
 import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
